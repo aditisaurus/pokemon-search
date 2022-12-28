@@ -1,7 +1,7 @@
 import React, { useEffect, useState, PureComponent } from "react";
 import PokemonItem from "./PokemonItem";
 import InfiniteLoader from "react-window-infinite-loader";
-import { FixedSizeGrid as Grid } from "react-window";
+import { FixedSizeGrid } from "react-window";
 import { FixedSizeList as List } from "react-window";
 import Image from "next/image";
 
@@ -85,37 +85,46 @@ function Main() {
     setPokeData(search);
   };
 
-  class PokeItem extends PureComponent {
-    render() {
-      const { index, style } = this.props;
-
-      return (
-        <div>
-          <div
-            class="max-w-sm rounded overflow-hidden shadow-sm"
-            data-cy="pokemon-list"
-          >
-            <Image
-              class="rounded-t-lg"
-              src={
-                `https://unpkg.com/pokeapi-sprites@2.0.2/sprites/pokemon/other/dream-world/` +
-                parseInt(pokeData[index]?.url.split("/").slice(-2, -1)) +
-                `.svg`
-              }
-              width={100}
-              height={100}
-              alt=""
-            />
-            <div class="px-6 py-4">
-              <div class="font-bold text-white text-xl mb-2">
-                {pokeData[index]?.name}{" "}
-              </div>
-            </div>
+  const Cell = ({ columnIndex, rowIndex, style }) => (
+    <div
+      className={
+        columnIndex % 2
+          ? rowIndex % 2 === 0
+            ? "GridItemOdd"
+            : "GridItemEven"
+          : rowIndex % 2
+          ? "GridItemOdd"
+          : "GridItemEven"
+      }
+      style={style}
+    >
+      <div
+        class="max-w-sm rounded overflow-hidden shadow-sm"
+        data-cy="pokemon-list"
+      >
+        <Image
+          class="rounded-t-lg"
+          src={
+            `https://unpkg.com/pokeapi-sprites@2.0.2/sprites/pokemon/other/dream-world/` +
+            parseInt(
+              pokeData[columnIndex + 1 + rowIndex * 5 - 1]?.url
+                .split("/")
+                .slice(-2, -1)
+            ) +
+            `.svg`
+          }
+          width={50}
+          height={50}
+          alt=""
+        />
+        <div class="px-6 py-4">
+          <div class="font-bold text-white text-xl mb-2">
+            {pokeData[columnIndex + 1 + rowIndex * 5 - 1]?.name}{" "}
           </div>
         </div>
-      );
-    }
-  }
+      </div>
+    </div>
+  );
 
   return (
     <div>
@@ -158,17 +167,32 @@ function Main() {
         loadMoreItems={loadMoreItems}
       >
         {({ onItemsRendered, ref }) => (
-          <List
-            className="List"
-            height={500 * 10000}
-            itemCount={500}
-            itemSize={300}
-            onItemsRendered={onItemsRendered}
+          <FixedSizeGrid
+            height={140000}
+            width={1400}
+            rowHeight={200}
+            columnWidth={300}
+            rowCount={1000}
+            columnCount={5}
+            onItemsRendered={({
+              visibleRowStartIndex,
+              visibleColumnStartIndex,
+              visibleRowStopIndex,
+              overscanRowStopIndex,
+              overscanRowStartIndex,
+            }) => {
+              onItemsRendered({
+                visibleColumnStartIndex: visibleColumnStartIndex,
+                overscanStartIndex: overscanRowStartIndex,
+                overscanStopIndex: overscanRowStopIndex,
+                visibleStartIndex: visibleRowStartIndex,
+                visibleStopIndex: visibleRowStopIndex,
+              });
+            }}
             ref={ref}
-            width={300}
           >
-            {PokeItem}
-          </List>
+            {Cell}
+          </FixedSizeGrid>
         )}
       </InfiniteLoader>
     </div>
