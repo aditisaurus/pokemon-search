@@ -1,10 +1,15 @@
-import React, { useEffect, useState } from "react";
-import SearchResult from "./SearchResult";
+import React, { useEffect, useState, PureComponent } from "react";
+import PokemonItem from "./PokemonItem";
+import InfiniteLoader from "react-window-infinite-loader";
 import { FixedSizeGrid as Grid } from "react-window";
-
+import { FixedSizeList as List } from "react-window";
+import Image from "next/image";
 
 function Main() {
   let historyList = [];
+  const [limit, setLimit] = useState(25);
+  const [offset, setOffset] = useState(-25);
+  const [hasNextPage, setHasNextPage] = useState(true);
   const [pokeList, setPokeList] = useState([]);
   const [pokeData, setPokeData] = useState([]);
   const [autoCompleteList, setAutoCompleteList] = useState();
@@ -14,14 +19,39 @@ function Main() {
   useEffect(() => {
     newList();
   }, []);
+  //const loadMoreItems = isNextPageLoading ? () => {} : loadNextPage;
+  const isItemLoaded = (index) => !!pokeData[index];
+  const newList = async () => {
+    new Promise(function (resolve, reject) {
+      fetch(
+        `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset + 25}`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          setPokeList([...pokeList, ...data.results]);
+          setPokeData([...pokeData, ...data.results]);
+          setOffset(offset + 25);
+        });
+    });
+  };
 
-  const newList = () => {
-    fetch("https://pokeapi.co/api/v2/pokemon?limit=500&offset=0")
-      .then((response) => response.json())
-      .then((data) => {
-        setPokeList(data.results);
-        setPokeData(data.results);
-      });
+  const loadMoreItems = (startIndex, stopIndex) => {
+    return new Promise((resolve) =>
+      setTimeout(() => {
+        fetch(
+          `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${
+            offset + 25
+          }`
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            setPokeList([...pokeList, ...data.results]);
+            setPokeData([...pokeData, ...data.results]);
+            setOffset(offset + 25);
+          });
+        resolve();
+      }, 2500)
+    );
   };
 
   const autoComplete = (e) => {
@@ -54,6 +84,38 @@ function Main() {
     setAutoCompleteList([]);
     setPokeData(search);
   };
+
+  class PokeItem extends PureComponent {
+    render() {
+      const { index, style } = this.props;
+
+      return (
+        <div>
+          <div
+            class="max-w-sm rounded overflow-hidden shadow-sm"
+            data-cy="pokemon-list"
+          >
+            <Image
+              class="rounded-t-lg"
+              src={
+                `https://unpkg.com/pokeapi-sprites@2.0.2/sprites/pokemon/other/dream-world/` +
+                parseInt(pokeData[index]?.url.split("/").slice(-2, -1)) +
+                `.svg`
+              }
+              width={100}
+              height={100}
+              alt=""
+            />
+            <div class="px-6 py-4">
+              <div class="font-bold text-white text-xl mb-2">
+                {pokeData[index]?.name}{" "}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }
 
   return (
     <div>
@@ -90,7 +152,25 @@ function Main() {
           ))}
         </ul>
       </div>
-      <SearchResult pokeData={pokeData} />
+      <InfiniteLoader
+        isItemLoaded={isItemLoaded}
+        itemCount={500}
+        loadMoreItems={loadMoreItems}
+      >
+        {({ onItemsRendered, ref }) => (
+          <List
+            className="List"
+            height={500 * 10000}
+            itemCount={500}
+            itemSize={300}
+            onItemsRendered={onItemsRendered}
+            ref={ref}
+            width={300}
+          >
+            {PokeItem}
+          </List>
+        )}
+      </InfiniteLoader>
     </div>
   );
 }

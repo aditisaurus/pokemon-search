@@ -1,10 +1,10 @@
 import React from "react";
 import Image from "next/image";
 
-function SearchResult({ pokeData }) {
+function PokemonItem({ value }) {
   return (
     <div>
-      {pokeData?.map((value) => (
+     
         <div
           class="max-w-sm rounded overflow-hidden shadow-sm"
           data-cy="pokemon-list"
@@ -24,9 +24,9 @@ function SearchResult({ pokeData }) {
             <div class="font-bold text-white text-xl mb-2">{value.name} </div>
           </div>
         </div>
-      ))}
+     
     </div>
   );
 }
 
-export default SearchResult;
+export default PokemonItem;
