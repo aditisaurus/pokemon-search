@@ -5,5 +5,12 @@
 @layer base {
   body {
     @apply bg-[#06202A] text-white;
+    overflow: hidden;
+  }
+  .scrollspy-example {
+    position: relative;
+    height: 200px;
+    overflow: auto;
+    overflow-y: scroll;
   }
 }

@@ -1,7 +1,9 @@
-import React, { useEffect, useState, PureComponent } from "react";
+import React, { useEffect, useState, createRef } from "react";
 import PokemonItem from "./PokemonItem";
+import Header from "./Header";
 import InfiniteLoader from "react-window-infinite-loader";
 import { FixedSizeGrid } from "react-window";
+import { AutoSizer } from "react-virtualized-auto-sizer";
 import { FixedSizeList as List } from "react-window";
 import Image from "next/image";
 
@@ -14,11 +16,12 @@ function Main() {
   const [autoCompleteList, setAutoCompleteList] = useState();
   const [searchItem, setSearchItem] = useState("");
   const [history, setHistory] = useState([]);
+  const mainRef = createRef();
 
   useEffect(() => {
     newList();
   }, []);
-  //const loadMoreItems = isNextPageLoading ? () => {} : loadNextPage;
+
   const isItemLoaded = (index) => !!pokeData[index];
   const newList = async () => {
     new Promise(function (resolve, reject) {
@@ -55,14 +58,15 @@ function Main() {
 
   const handleAutoComplete = (e) => {
     setSearchItem(e.target.value);
-    console.log(pokeList, " Testing Pokelist");
     const autoCompleteValue = pokeList.filter((poke) =>
       poke.name.startsWith(e.target.value)
     );
-    console.log(autoCompleteValue, " Testing List");
-    setAutoCompleteList(autoCompleteValue);
+    setAutoCompleteList(autoCompleteValue.slice(0, 5));
     setPokeData(autoCompleteValue);
-    window.scrollTo(0, 0);
+    mainRef.current?.scrollToItem({
+      columnIndex: 0,
+      rowIndex: 0,
+    });
     if (e.target.value === "") {
       setAutoCompleteList([]);
       setPokeData(pokeList);
@@ -77,7 +81,7 @@ function Main() {
     setAutoCompleteList([]);
   };
 
-  const submitSearch = (e) => {
+  const handleSubmitSearch = (e) => {
     e.preventDefault();
     const search = pokeList.filter((poke) => poke.name === searchItem);
     //sessionStorage.setItem(history, setHistory([...history, ...search]));
@@ -99,13 +103,14 @@ function Main() {
       style={style}
     >
       <div
-        class="max-w-sm rounded overflow-hidden shadow-sm"
-        data-cy="pokemon-list"
+        class="max-w-md rounded overflow-hidden shadow-sm"
+        ref={columnIndex + 1 + rowIndex * 5 - 1 === 0 ? mainRef : null}
       >
         {pokeData[columnIndex + 1 + rowIndex * 5 - 1] !== undefined ? (
           <>
             <Image
-              class="rounded-t-lg justify-center"
+              data-cy="pokemon-list"
+              class="rounded-t-lg justify-center pl-10 "
               src={
                 `https://unpkg.com/pokeapi-sprites@2.0.2/sprites/pokemon/other/dream-world/` +
                 parseInt(
@@ -115,8 +120,8 @@ function Main() {
                 ) +
                 `.svg`
               }
-              width={50}
-              height={50}
+              width={100}
+              height={100}
               alt=""
             />
             <div class="px-6 py-4">
@@ -134,51 +139,17 @@ function Main() {
 
   return (
     <div>
-      <div>
-        <header>
-          <nav class="navbar navbar-expand-lg shadow-lg py-2 bg-green relative flex items-center w-full justify-between">
-            <div class="px-6 w-full flex flex-wrap items-center justify-between">
-              <div
-                class="navbar-collapse collapse grow items-center"
-                id="navbarSupportedContentY"
-              >
-                <div class="flex space-x-2 justify-center">
-                  <div>
-                    <button
-                      type="button"
-                      class="inline-block px-6 py-2.5 bg-gray-800 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-900 hover:shadow-lg focus:bg-gray-900 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-gray-900 active:shadow-lg transition duration-150 ease-in-out"
-                    >
-                      Dark
-                    </button>
-                  </div>
-                  <ul class="navbar-nav mr-auto lg:flex lg:flex-row">
-                    <li class="nav-item">
-                      <a
-                        class="nav-link block pr-2 lg:px-2 py-2 text-gray-600 hover:text-gray-700 focus:text-gray-700 transition duration-150 ease-in-out"
-                        href="#!"
-                        data-mdb-ripple="true"
-                        data-mdb-ripple-color="light"
-                      >
-                        Home
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </nav>
-        </header>
-      </div>
+      <Header />
       <div>
         <form
           data-cy="pokemon-search-input"
-          class="w-full max-w-xlg flex justify-center py-10"
-          onSubmit={(e) => submitSearch(e)}
+          class="w-full max-w-xlg flex justify-center py-5 pb-8 pt-8 my-2"
+          onSubmit={(e) => handleSubmitSearch(e)}
         >
-          <div class="flex items-center border-b border-teal-500">
+          <div class="flex items-center border-b border-yellow-300">
             <input
               id="search-input-id"
-              class="appearance-none bg-transparent border-none w-full text-white mr-3 py-1 px-2 leading-tight focus:outline-none"
+              class="appearance-none bg-transparent border-none w-full text-white mr-3 py-1 px-2  leading-tight focus:outline-none"
               type="text"
               placeholder="Search..."
               value={searchItem}
@@ -189,12 +160,12 @@ function Main() {
         </form>
       </div>
 
-      <div class="flex justify-center min-w-sm z-index: 999">
-        <ul class="bg-white rounded-lg  border-gray-200 w-80 text-gray-900">
+      <div class="flex justify-center min-w-md z-999 px-0 ">
+        <ul class="bg-white rounded-md  border-gray-200 w-55 text-gray-900">
           {autoCompleteList?.map((data) => (
             <li
               data-cy="pokemon-autosuggestion-list"
-              class="px-3 py-2 border-b border-gray-200 w-full rounded-t-lg"
+              class="px-3 py-2 border-b border-gray-200 w-full cursor-pointer rounded-t-lg"
               onClick={() => handleAutoCompleteSearch(data)}
             >
               {data.name}
@@ -202,6 +173,7 @@ function Main() {
           ))}
         </ul>
       </div>
+
       <InfiniteLoader
         isItemLoaded={isItemLoaded}
         itemCount={500}
@@ -210,7 +182,7 @@ function Main() {
         {({ onItemsRendered, ref }) => (
           <FixedSizeGrid
             height={140000}
-            width={1400}
+            width={1600}
             rowHeight={175}
             columnWidth={300}
             rowCount={1000}
@@ -230,7 +202,7 @@ function Main() {
                 visibleStopIndex: visibleRowStopIndex,
               });
             }}
-            ref={ref}
+            ref={mainRef}
           >
             {Cell}
           </FixedSizeGrid>

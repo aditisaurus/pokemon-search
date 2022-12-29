@@ -37,15 +37,15 @@ describe("API TESTING", () => {
 
 describe("SEARCH INPUT", () => {
   it("displays on the page", () => {
-    cy.visit("http://localhost:3002/?");
+    cy.visit("http://localhost:3000/?");
   });
 
   beforeEach(() => {
-    cy.visit("http://localhost:3002/?");
+    cy.visit("http://localhost:3000/?");
   });
 
   it("renders the list of pokemons", () => {
-    cy.get("[data-cy='pokemon-list']").should("have.length", 1154);
+    cy.get("[data-cy='pokemon-list']").its("length").should("be.gt", 20);
   });
 
   it("allows users to search for the pokemon", () => {
