@@ -37,11 +37,11 @@ describe("API TESTING", () => {
 
 describe("SEARCH INPUT", () => {
   it("displays on the page", () => {
-    cy.visit("http://localhost:3001/?");
+    cy.visit("http://localhost:3000");
   });
 
   beforeEach(() => {
-    cy.visit("http://localhost:3001/?");
+    cy.visit("http://localhost:3000");
   });
 
   it("renders the list of pokemons", () => {

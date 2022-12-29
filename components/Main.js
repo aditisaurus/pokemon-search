@@ -8,13 +8,20 @@ import Image from "next/image";
 function Main() {
   const [limit, setLimit] = useState(25);
   const [offset, setOffset] = useState(-25);
-  const [hasNextPage, setHasNextPage] = useState(true);
   const [pokeList, setPokeList] = useState([]);
   const [pokeData, setPokeData] = useState([]);
   const [autoCompleteList, setAutoCompleteList] = useState();
   const [searchItem, setSearchItem] = useState("");
   const [history, setHistory] = useState([]);
   const mainRef = createRef();
+
+  const height = 140000;
+  const width = 1600;
+  const rowHeight = 175;
+  const columnWidth = 300;
+  const rowCount = 1000;
+  const columnCount = 5;
+  const itemCount = 500;
 
   useEffect(() => {
     newList();
@@ -70,13 +77,10 @@ function Main() {
       setPokeData(pokeList);
     }
   };
-  const handleSearchHistory = () => {
-    setAutoCompleteList(history);
-  };
+
   const handleAutoCompleteSearch = (data) => {
     const results = pokeList.filter((poke) => poke.name === data.name);
     setSearchItem(data.name);
-    sessionStorage.setHistory(history, [...history, ...results]);
     console.log(history);
     setPokeData(results);
     setAutoCompleteList([]);
@@ -85,7 +89,6 @@ function Main() {
   const handleSubmitSearch = (e) => {
     e.preventDefault();
     const search = pokeList.filter((poke) => poke.name === searchItem);
-    sessionStorage.setItem(history, setHistory([...history, ...search]));
     setAutoCompleteList([]);
     setPokeData(search);
   };
@@ -156,7 +159,6 @@ function Main() {
               value={searchItem}
               aria-label="Full name"
               onChange={handleAutoComplete}
-              onClick={handleSearchHistory}
             />
           </div>
         </form>
@@ -178,17 +180,17 @@ function Main() {
 
       <InfiniteLoader
         isItemLoaded={isItemLoaded}
-        itemCount={500}
+        itemCount={itemCount}
         loadMoreItems={loadMoreItems}
       >
         {({ onItemsRendered, ref }) => (
           <FixedSizeGrid
-            height={140000}
-            width={1600}
-            rowHeight={175}
-            columnWidth={300}
-            rowCount={1000}
-            columnCount={5}
+            height={height}
+            width={width}
+            rowHeight={rowHeight}
+            columnWidth={columnWidth}
+            rowCount={rowCount}
+            columnCount={columnCount}
             onItemsRendered={({
               visibleRowStartIndex,
               visibleColumnStartIndex,
