@@ -37,41 +37,31 @@ describe("API TESTING", () => {
 
 describe("SEARCH INPUT", () => {
   it("displays on the page", () => {
-    cy.visit("http://localhost:3000/?");
+    cy.visit("http://localhost:3002/?");
   });
 
   beforeEach(() => {
-    cy.visit("http://localhost:3000/?");
+    cy.visit("http://localhost:3002/?");
   });
 
   it("renders the list of pokemons", () => {
-    cy.get("[data-cy='pokemon-list']").should("have.length", 500);
+    cy.get("[data-cy='pokemon-list']").should("have.length", 1154);
   });
 
   it("allows users to search for the pokemon", () => {
     cy.get("[data-cy='pokemon-search-input']").type("metapod").submit();
     cy.get("[data-cy='pokemon-list']").should("have.length", 1);
     cy.contains("metapod");
-
-    /*cy.get("[data-cy='pokemon-search-input']").clear().type("hypno").submit();
-    cy.get("[data-cy='pokemon-list']").should("have.length", 1);
-    cy.contains("hypno");*/
   });
 
   it("auto suggestion loads while typing", () => {
-    cy.get("[data-cy='pokemon-search-input']").type("kab");
+    cy.get("[data-cy='pokemon-search-input']").type("char");
     cy.wait(4000);
-    cy.get("[data-cy='pokemon-autosuggestion-list']").should("have.length", 2);
-    cy.contains("kabuto");
-    cy.contains("kabutops").click();
+    cy.get("[data-cy='pokemon-autosuggestion-list']").should("have.length", 3);
+    cy.contains("charmander");
+    cy.contains("charmeleon");
+    cy.contains("charizard").click();
     cy.wait(4000);
     cy.get("[data-cy='pokemon-list']").should("have.length", 1);
   });
-
-  /*it("loads item when autosuggestion is clicked", () => {
-    cy.get("[data-cy='pokemon-search-input']").type("kab");
-    cy.get("[data-cy='pokemon-autosuggestion-list']").should("have.length", 2);
-    cy.contains("kabuto");
-    cy.contains("kabutops");
-  });*/
 });
