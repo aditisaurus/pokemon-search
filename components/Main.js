@@ -1,10 +1,8 @@
 import React, { useEffect, useState, createRef } from "react";
-import PokemonItem from "./PokemonItem";
 import Header from "./Header";
 import InfiniteLoader from "react-window-infinite-loader";
 import { FixedSizeGrid } from "react-window";
-import { AutoSizer } from "react-virtualized-auto-sizer";
-import { FixedSizeList as List } from "react-window";
+
 import Image from "next/image";
 
 function Main() {
@@ -72,11 +70,14 @@ function Main() {
       setPokeData(pokeList);
     }
   };
-
+  const handleSearchHistory = () => {
+    setAutoCompleteList(history);
+  };
   const handleAutoCompleteSearch = (data) => {
     const results = pokeList.filter((poke) => poke.name === data.name);
     setSearchItem(data.name);
-    //sessionStorage.setItem(history, [...history, ...results]);
+    sessionStorage.setHistory(history, [...history, ...results]);
+    console.log(history);
     setPokeData(results);
     setAutoCompleteList([]);
   };
@@ -84,7 +85,7 @@ function Main() {
   const handleSubmitSearch = (e) => {
     e.preventDefault();
     const search = pokeList.filter((poke) => poke.name === searchItem);
-    //sessionStorage.setItem(history, setHistory([...history, ...search]));
+    sessionStorage.setItem(history, setHistory([...history, ...search]));
     setAutoCompleteList([]);
     setPokeData(search);
   };
@@ -143,7 +144,7 @@ function Main() {
       <div>
         <form
           data-cy="pokemon-search-input"
-          class="w-full max-w-xlg flex justify-center py-5 pb-8 pt-8 my-2"
+          class="w-full max-w-xlg flex justify-center py-5 pb-4 pt-8 my-2"
           onSubmit={(e) => handleSubmitSearch(e)}
         >
           <div class="flex items-center border-b border-yellow-300">
@@ -155,12 +156,13 @@ function Main() {
               value={searchItem}
               aria-label="Full name"
               onChange={handleAutoComplete}
+              onClick={handleSearchHistory}
             />
           </div>
         </form>
       </div>
 
-      <div class="flex justify-center min-w-md z-999 px-0 ">
+      <div class="flex justify-center min-w-md z-999 px-0 pt-0 ">
         <ul class="bg-white rounded-md  border-gray-200 w-55 text-gray-900">
           {autoCompleteList?.map((data) => (
             <li
